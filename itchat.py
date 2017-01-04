@@ -1,12 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This is a temporary script file.
-"""
-
-    
-#%%
 
 import requests
 
@@ -26,31 +17,31 @@ def get_echo(s):
 
 
 from itchat.content import *
-import threading
 import itchat
 msgs=[]
+msgdic=dict()
 
 itchat.auto_login(hotReload=True,)
-#%%
-#%%
+####################################username to remarkname
 namedic=dict()
-
 for x in itchat.get_friends():
     namedic[x['UserName']]=x['RemarkName']
-    #%%
 for x in itchat.get_chatrooms():
     namedic[x['UserName']]=x['NickName']
-    #%%
 def get_name(x):
     return namedic.get(x,x)
-
 def explain(msg):
     for x in msg:
         if isinstance(msg[x],str) and msg[x].startswith('@'):
             msg[x]=get_name(msg[x])
     return msg
-thd=threading.Thread(target=itchat.run)
-thd.start()
+#######################################################
+itchat.run(0,0)
+
+for x in itchat.get_chatrooms():
+    print(x["NickName"])
+    print(x["UserName"])
+    print()
 
 auto_target=[]
 for tgt in auto_target:
@@ -63,9 +54,9 @@ for tgt in auto_target:
     itchat.send('主人的静音取消了，应该是刚被开完会，再聊哦，tiri会想念大家的，么么哒',tgt)
 auto_target=[]
 
-
 @itchat.msg_register([TEXT,PICTURE], isFriendChat=True, isGroupChat=True, isMpChat=True)
 def robot(msg):
+    msgdic[msg['MsgId']]=msg['Text']
     msgs.append(msg)
     print(msg['Text'])
     if msg['FromUserName'] in auto_target:
@@ -74,27 +65,29 @@ def robot(msg):
     #print(get_name(msg['FromUserName']),':',msg.get('ActualNickName',''),'->',get_name(msg['ToUserName']),msg['Text'])
 
 
-###############################################
-msgdic=dict()
+#############################################################
 def get_revoked_text(msg):
-    txt=msg['Content']
-    pos1=txt.find('<msgid>')+7
-    pos2=txt.find('<',pos1)
-    return txt[pos1:pos2]
+    try:
+        txt=msg['Content']
+        pos1=txt.find('<msgid>')+7
+        pos2=txt.find('<',pos1)
+        return '撤消内容是：“'+msgdic[txt[pos1:pos2]]+'”'
+    except:
+        return '撤销的消息非文字，我把附件存到电脑了，以防耗费大家流量，需要的话找我主人要。'
 
-@itchat.msg_register([TEXT, MAP, CARD, NOTE, SHARING], isFriendChat=True, isGroupChat=True, isMpChat=True)
+
+@itchat.msg_register([NOTE], isFriendChat=True, isGroupChat=True, isMpChat=True)
 def show_revoke(msg):
     msgs.append(msg)
     un=msg['FromUserName']
     if '@@' not in un:
         un=msg['ToUserName']
-    msgdic[msg['MsgId']]=msg['Text']
+    #print(msg)
     print('%s: %s' % (msg['Type'], msg['Text']), get_name(msg['FromUserName']))
     if '<sysmsg type="revokemsg">' in msg['Content']:
-        themsg=msgdic[get_revoked_text(msg)]
-        txt='撤消内容是：“'+themsg+'”'
-        print(txt)
-        print(un)
+        themsg=get_revoked_text(msg)
+        print(themsg)
+        itchat.send(themsg,un)
         #itchat.send(txt,un)
 #########################################################
 #@itchat.msg_register([PICTURE, RECORDING, ATTACHMENT, VIDEO], isFriendChat=True, isGroupChat=True, isMpChat=True)
@@ -103,10 +96,9 @@ def show_revoke(msg):
 #    print(msg['FileName'])
 #    return '@%s@%s' % ({'Picture': 'img', 'Video': 'vid'}.get(msg['Type'], 'fil'), msg['FileName'])
 
-#@itchat.msg_register([PICTURE, RECORDING, ATTACHMENT, VIDEO], isFriendChat=True, isGroupChat=True, isMpChat=True)
-#def download_files(msg):
-#    print(print(msg['FileName']))
+@itchat.msg_register([ATTACHMENT,CARD,FRIENDS,MAP,NOTE,PICTURE,RECORDING,SHARING,SYSTEM,TEXT,VIDEO], isFriendChat=True, isGroupChat=True, isMpChat=True)
+def download_files(msg):
+    print('msg received.')
+    msgs.append(msg)
 #%%
-
-
 
