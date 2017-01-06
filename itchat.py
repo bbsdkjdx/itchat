@@ -22,8 +22,8 @@ robotqueue=[]
 revokequeue=[]
 itchat.auto_login(hotReload=True,)
 
-def now():
-    return '\n['+time.ctime()[-13:-5]+']'
+def robot_send(s,un):
+    itchat.send('<tiri>:\n'+s+'\n['+time.ctime()[-13:-5]+']',un) 
 ####################################  username to remarkname  ############
 namedic=dict()
 for x in itchat.get_friends():
@@ -53,13 +53,7 @@ for x in itchat.get_chatrooms():
 ##################### robot enter leave ###############################
 auto_target=[]
 for tgt in auto_target:
-    itchat.send('大家好，我是siri她哥，我叫tiri，主人手机刚设置静音，应该是休息了，我可以陪大家聊天哦！[呲牙]',tgt)
-
-for tgt in auto_target:
-    itchat.send('大家好，我是tiri，主人又让我出来了，如果嫌我吵，@我哦',tgt)
-
-for tgt in auto_target:
-    itchat.send('主人的静音取消了，应该是刚被开完会，再聊哦，tiri会想念大家的，么么哒',tgt)
+    itchat.send('',tgt)
 auto_target=[]
 ######################  robot routine ##############################
 @itchat.msg_register([TEXT,PICTURE], isFriendChat=True, isGroupChat=True, isMpChat=True)
@@ -68,9 +62,9 @@ def robot(msg):
     msgs.append(msg)
     #print(msg)
     if msg['FromUserName'] in auto_target:
-        itchat.send('<tiri>:'+get_echo(msg['Text'])+now(),msg['FromUserName'])
+        robot_send(get_echo(msg['Text']),msg['FromUserName'])
         if robotqueue:
-            itchat.send('<tiri>:'+robotqueue.pop(0)+now(),msg['FromUserName'])
+            robot_send(robotqueue.pop(0),msg['FromUserName'])
 
 #######################  revoke routine ######################################
 def get_revoked_text(msg):
@@ -94,9 +88,9 @@ def show_revoke(msg):
     if '<sysmsg type="revokemsg">' in msg['Content']:
         themsg='<tiri>:'+get_revoked_text(msg)+now()
         print(themsg)
-        itchat.send(themsg,un)
+        robot_send(themsg,un)
         if revokequeue:
-            itchat.send('<tiri>:'+revokequeue.pop(0)+now(),un)
+            robot_send(revokequeue.pop(0),un)
 
 #########################################################
 #@itchat.msg_register([PICTURE, RECORDING, ATTACHMENT, VIDEO], isFriendChat=True, isGroupChat=True, isMpChat=True)
@@ -107,8 +101,7 @@ def show_revoke(msg):
 
 #%%
 
-robotqueue=['hua shuo 我又多了n个功能。',\
-'彬仔让我说话前加上<tiri>:这样我说什么邪恶的话他能撇清干系[难过]。',\
+robotqueue=['彬仔让我说话前加上<tiri>:这样我说什么邪恶的话他能撇清干系[难过]。',\
 '我还能反撤消你们的消息，话说彬仔怎么开发了这么个邪恶的功能尼？',\
 '我能用互联网查天气哦，你问我哪里的天气，我就能查给你。',\
 '我还能查日期之类的，还很基本，以后慢慢来，互联网会变成我的数据库，前景好曼妙的赶脚。。',\
