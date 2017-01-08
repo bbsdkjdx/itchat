@@ -23,7 +23,7 @@ revokequeue=[]
 itchat.auto_login(hotReload=True,)
 
 def robot_send(s,un):
-    itchat.send('<tiri>:\n'+s+'\n['+time.ctime()[-13:-5]+']',un) 
+    itchat.send('<robot>['+time.ctime()[-13:-5]+']:\n'+s,un) 
 ####################################  username to remarkname  ############
 namedic=dict()
 for x in itchat.get_friends():
@@ -44,12 +44,8 @@ itchat.run(0,0)
 def download_files(msg):
     print('receive a message')
     msgs.append(msg)
-###################  show chat rooms #################################
 
-for x in itchat.get_chatrooms():
-    print(x["NickName"])
-    print(x["UserName"])
-    print()
+
 ##################### robot enter leave ###############################
 auto_target=[]
 for tgt in auto_target:
@@ -113,3 +109,18 @@ revokequeue=['撤销的文本我直接显示出来，撤销的其它东西，直
 '我都有点不好yi xi了[偷笑]',\
 '好邪恶的功能呢'\
 ]
+
+robotqueue=[]
+revokequeue=[]
+
+def set_auto_reply():
+    li=[(x["NickName"],x["UserName"]) for x in itchat.get_chatrooms()]
+    for n,x in enumerate(li):
+        print('%-3d %-5s %-20s '%(n+1,'yes'if x[1] in auto_target else 'no',x[0][:20]))
+    import re
+    ns=re.findall('\\d+',input('number to change:'))
+    for x in map(int,ns):
+        if li[x-1][1] in auto_target:
+            auto_target.remove(li[x-1][1])
+        else:
+            auto_target.append(li[x-1][1])    
